@@ -59,51 +59,34 @@ accelerator:
 engine:
   let:
     - name: backendServiceResourceName
-      expression: '#backendService.toLowerCase()'
+      expression: "#backendService.toLowerCase()"
     - name: workloadResourceName
-      expression: '#artifactId.toLowerCase()'
-  chain:
-    - applyTo: [ "nginx.conf" ]
-      chain:
-        - type: ReplaceText
-          substitutions:
-            - text: "http://backend/api/"
-              with: "'http://' + #backendServiceResourceName + '/api/'"
-
-    - applyTo: [ "config/workload.yaml", "catalog/catalog-info.yaml" ]
-      chain:
-        - type: ReplaceText
-          substitutions:
-            - text: "angular-frontend"
-              with: "#workloadResourceName"
-
-    - condition: "#useSingleSignOn == true"
-      applyTo: [ "src/assets/auth.conf.json", "config/clientregistration.yaml", "src/app/app.module.ts", "src/app/app-routing.module.ts", "config/clientregistration.yaml" ]
-      chain:
-        - type: ReplaceText
-          substitutions:
-            - text: "<your-authserver-uri>"
-              with: "#authority"
-            - text: "<your-client-id>"
-              with: "#workloadResourceName"
-            - text: "<your-authserver-match-label-value>"
-              with: "#authorityLabelValue"
-            - text: "<your-authserver-match-label-key>"
-              with: "#authorityLabelKey"
-            - text: "<your-namespace>"
-              with: "#namespace"
+      expression: "#artifactId.toLowerCase()"
 
     - merge:
-      - type: InvokeFragment
-        reference: tap-workload
-      - include: [ "**" ]
+        - type: InvokeFragment
+          reference: tap-workload
+        - include: ["**"]
       onConflict: UseFirst
 
     - condition: "!#useSingleSignOn"
       merge:
-        - include: [ "**" ]
-          exclude: [ "README.md", "src/app/app.module.ts", "src/app/app-routing.module.ts", "AUTHORIZATION.md", "src/app/authorization/**", "src/app/user-profile/**", "src/assets/auth.conf.json", "config/clientregistration.yaml", "src/app/app-config.service.ts", "src/utils.ts", "src/utils.spec.ts" ]
-        - include: [ "src/app/app.module.ts", "src/app/app-routing.module.ts" ]
+        - include: ["**"]
+          exclude:
+            [
+              "README.md",
+              "src/app/app.module.ts",
+              "src/app/app-routing.module.ts",
+              "AUTHORIZATION.md",
+              "src/app/authorization/**",
+              "src/app/user-profile/**",
+              "src/assets/auth.conf.json",
+              "config/clientregistration.yaml",
+              "src/app/app-config.service.ts",
+              "src/utils.ts",
+              "src/utils.spec.ts",
+            ]
+        - include: ["src/app/app.module.ts", "src/app/app-routing.module.ts"]
           chain:
             - type: ReplaceText
               regex:
@@ -121,7 +104,7 @@ engine:
               regex:
                 pattern: "// StartSSORoutes[\\s\\S]+?// EndSSORoutes"
                 with: "''"
-        - include: [ "README.md" ]
+        - include: ["README.md"]
           chain:
             - type: ReplaceText
               regex:
@@ -129,7 +112,7 @@ engine:
                 with: "''"
       onConflict: UseFirst
 
-    - include: [ "**" ]
-      exclude: [ "tekton/**" ]
+    - include: ["**"]
+      exclude: ["tekton/**"]
 
     - type: Provenance
